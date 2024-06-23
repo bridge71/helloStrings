@@ -8,8 +8,8 @@ import (
 )
 
 type KeyOfUser struct {
-	nickname string `json:"nickname"`
-	email    string `json:"email"`
+	Nickname string `json:"nickname"`
+	Email    string `json:"email"`
 }
 
 func DbConn() (db *sql.DB) {
