@@ -7,6 +7,11 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
+type KeyOfUser struct {
+	nickname string `json:"nickname"`
+	email    string `json:"email"`
+}
+
 func DbConn() (db *sql.DB) {
 	dbDriver := os.Getenv("DBDRIVER")
 	dbUser := os.Getenv("DBUSER")
