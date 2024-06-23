@@ -19,9 +19,9 @@ import (
 // }
 
 func main() {
-	// router := gin.Default()
-	// db := dbConn()
-	// defer db.Close()
+	router := gin.Default()
+	db := DbConn()
+	defer db.Close()
 	//
 	// router.GET("/", func(c *gin.Context) {
 	// 	// Example of using the database
@@ -40,6 +40,5 @@ func main() {
 	// 	c.String(200, message)
 	// })
 	//
-	router := gin.Default()
 	router.Run(":8080")
 }

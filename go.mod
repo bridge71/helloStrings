@@ -1,4 +1,4 @@
-module github.com/bridge71/helloStrings/helloStrings-go
+module github.com/bridge71/helloStrings
 
 go 1.22.4
 
