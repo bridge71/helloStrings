@@ -1,28 +1,22 @@
 package main
 
 import (
+	"github.com/bridge71/helloStrings/api/configs"
+	"github.com/bridge71/helloStrings/api/handlers"
+	"github.com/bridge71/helloStrings/api/repositories"
+	"github.com/bridge71/helloStrings/api/routers"
+	"github.com/bridge71/helloStrings/api/services"
 	"github.com/gin-gonic/gin"
-	_ "github.com/go-sql-driver/mysql"
 )
-
-// func dbConn() (db *sql.DB) {
-// 	dbDriver := os.Getenv("DBDRIVER")
-// 	dbUser := os.Getenv("DBUSER")
-// 	// dbPass := "password"
-// 	dbPass := os.Getenv("DBPASS")
-// 	dbName := os.Getenv("DBNAME")
-// 	db, err := sql.Open(dbDriver, dbUser+":"+dbPass+"@tcp(localhost:3306)/"+dbName)
-// 	if err != nil {
-// 		panic(err.Error())
-// 	}
-// 	return db
-// }
 
 func main() {
 	router := gin.Default()
-	db := DbConn()
-	defer db.Close()
+	configs.LoadConfigs()
+	userService := services.NewUserService(&repositories.UserRepository{})
+	userHandler := handlers.NewUserHandler(userService)
+	routers.RegisterRoutes(router, userHandler)
 	//
+	// router.POST("/register", handlers.Register)
 	// router.GET("/", func(c *gin.Context) {
 	// 	// Example of using the database
 	// 	rows, err := db.Query("SELECT email from Users;")
