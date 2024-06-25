@@ -2,16 +2,24 @@ package configs
 
 import (
 	"fmt"
+	"math/rand"
 	"os"
+	"time"
 
 	"github.com/bridge71/helloStrings/api/models"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
-var DB *gorm.DB
+var (
+	DB           *gorm.DB
+	CustomSource rand.Source
+	CustomRand   *rand.Rand
+)
 
 func LoadConfigs() {
+	CustomSource = rand.NewSource(time.Now().UnixNano())
+	CustomRand = rand.New(CustomSource)
 }
 
 func init() {

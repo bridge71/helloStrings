@@ -14,5 +14,5 @@ func NewUserRouter(handler *handlers.UserHandler) *UserRouter {
 }
 
 func RegisterRoutes(router *gin.Engine, userHandler *handlers.UserHandler) {
-	router.POST("/check", userHandler.CheckUser)
+	router.POST("/register", userHandler.CheckUser)
 }
