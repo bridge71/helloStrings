@@ -1,7 +1,6 @@
 package services
 
 import (
-	"fmt"
 	"net/http"
 	"os"
 	"strconv"
@@ -10,6 +9,7 @@ import (
 	"github.com/bridge71/helloStrings/api/models"
 	"github.com/bridge71/helloStrings/api/repositories"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 type UserService struct {
@@ -20,23 +20,36 @@ func NewUserService(userRepository *repositories.UserRepository) *UserService {
 	return &UserService{UserRepository: userRepository}
 }
 
-func (s *UserService) CheckUser(c *gin.Context) (int, models.Message) {
+func (s *UserService) AccquireInfo(c *gin.Context) (*models.User, bool, bool) {
 	nickname, f1 := c.GetPostForm("nickname")
 	email, f2 := c.GetPostForm("email")
-	fmt.Println(email)
-	fmt.Println(nickname)
 
-	if !f1 || nickname == "" {
-		return http.StatusForbidden, models.Message{RetMessage: "nickname does not exist"}
-	}
-	if !f2 || email == "" {
-		return http.StatusForbidden, models.Message{RetMessage: "email does not exist"}
-	}
 	user := &models.User{
 		Nickname: nickname,
 		Email:    email,
 		// Level:    0,
 	}
+	return user, f1, f2
+}
+
+func (s *UserService) CheckUser(c *gin.Context) (int, models.Message) {
+	user, f1, f2 := s.AccquireInfo(c)
+	if !f1 || user.Nickname == "" {
+		return http.StatusForbidden, models.Message{RetMessage: "nickname does not exist"}
+	}
+	if !f2 || user.Email == "" {
+		return http.StatusForbidden, models.Message{RetMessage: "email does not exist"}
+	}
+
+	password, f := c.GetPostForm("password")
+	if !f {
+		return http.StatusForbidden, models.Message{RetMessage: "password does not exist"}
+	}
+	auth := &models.UserAuth{
+		UserId:       user.UserId,
+		PasswordHash: password,
+	}
+
 	user1 := &models.User{}
 	user2 := &models.User{}
 	s.UserRepository.CheckUserEmail(c, user1, user.Email)
@@ -49,10 +62,21 @@ func (s *UserService) CheckUser(c *gin.Context) (int, models.Message) {
 		return http.StatusNotAcceptable, models.Message{RetMessage: "nickname has been occupied"}
 	}
 
-	err := s.UserRepository.CreaterUser(c, user)
+	err := configs.DB.Transaction(func(tx *gorm.DB) error {
+		err := s.UserRepository.CreaterUser(c, user)
+		if err != nil {
+			return err
+		}
+		err = s.UserRepository.InjectAuth(c, auth)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
 	if err != nil {
-		return http.StatusInternalServerError, models.Message{RetMessage: "something unusual happened when insert into database"}
+		return http.StatusInternalServerError, models.Message{RetMessage: "something unusual happened when insert user or auth into database"}
 	}
+
 	return http.StatusOK, models.Message{RetMessage: "nickname and email are acceptable"}
 }
 

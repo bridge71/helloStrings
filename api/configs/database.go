@@ -2,6 +2,7 @@ package configs
 
 import (
 	"fmt"
+	"log"
 	"math/rand"
 	"os"
 	"time"
@@ -9,6 +10,7 @@ import (
 	"github.com/bridge71/helloStrings/api/models"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 var (
@@ -37,11 +39,20 @@ func init() {
 		port,
 		dbName,
 	)
-	DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	newLogger := logger.New(
+		log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
+		logger.Config{
+			SlowThreshold: time.Second, // Slow SQL threshold
+			LogLevel:      logger.Info, // Log level
+			Colorful:      true,        // Disable color
+		},
+	)
+	DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{
+		Logger: newLogger,
+	})
 	if err != nil {
 		panic("failed to connect database")
 	}
-
 	// Auto-migrate the models
-	DB.AutoMigrate(&models.User{})
+	DB.AutoMigrate(&models.User{}, &models.UserAuth{})
 }

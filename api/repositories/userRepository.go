@@ -16,6 +16,10 @@ func (r *UserRepository) CreaterUser(c *gin.Context, user *models.User) error {
 	return configs.DB.WithContext(c).Create(&user).Error
 }
 
+func (r *UserRepository) InjectAuth(c *gin.Context, userauth *models.UserAuth) error {
+	return configs.DB.WithContext(c).Create(&userauth).Error
+}
+
 func (r *UserRepository) CheckUserName(c *gin.Context, user *models.User, nickname string) {
 	configs.DB.WithContext(c).Where("nickname = ?", nickname).Find(user)
 }
