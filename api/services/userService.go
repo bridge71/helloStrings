@@ -9,6 +9,7 @@ import (
 	"github.com/bridge71/helloStrings/api/models"
 	"github.com/bridge71/helloStrings/api/repositories"
 	"github.com/gin-gonic/gin"
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
@@ -32,7 +33,34 @@ func (s *UserService) AccquireInfo(c *gin.Context) (*models.User, bool, bool) {
 	return user, f1, f2
 }
 
-func (s *UserService) CheckUser(c *gin.Context) (int, models.Message) {
+func (s *UserService) AuthUser(c *gin.Context) (int, models.Message) {
+	user, f1, f2 := s.AccquireInfo(c)
+	if !f1 && !f2 {
+		return http.StatusForbidden, models.Message{RetMessage: "misssing nickname or email"}
+	}
+	userAccess := &models.User{}
+	if f1 {
+		configs.DB.Where("nickname = ?", user.Nickname).First(userAccess)
+	} else {
+		configs.DB.Where("email = ?", user.Email).First(userAccess)
+	}
+
+	password, f := c.GetPostForm("password")
+	if !f {
+		return http.StatusForbidden, models.Message{RetMessage: "missing password"}
+	}
+
+	auth := &models.UserAuth{}
+	configs.DB.Where("userId = ?", userAccess.UserId).First(auth)
+
+	err := bcrypt.CompareHashAndPassword([]byte(auth.PasswordHash), []byte(password))
+	if err != nil {
+		return http.StatusNotAcceptable, models.Message{RetMessage: "wrong password"}
+	}
+	return http.StatusOK, models.Message{RetMessage: "authentication successful"}
+}
+
+func (s *UserService) CreateUser(c *gin.Context) (int, models.Message) {
 	user, f1, f2 := s.AccquireInfo(c)
 	if !f1 || user.Nickname == "" {
 		return http.StatusForbidden, models.Message{RetMessage: "nickname does not exist"}
@@ -45,9 +73,9 @@ func (s *UserService) CheckUser(c *gin.Context) (int, models.Message) {
 	if !f {
 		return http.StatusForbidden, models.Message{RetMessage: "password does not exist"}
 	}
-	auth := &models.UserAuth{
-		UserId:       user.UserId,
-		PasswordHash: password,
+	encryptedPassword, err := EncryptPassword(password)
+	for err != nil {
+		encryptedPassword, err = EncryptPassword(password)
 	}
 
 	user1 := &models.User{}
@@ -62,10 +90,15 @@ func (s *UserService) CheckUser(c *gin.Context) (int, models.Message) {
 		return http.StatusNotAcceptable, models.Message{RetMessage: "nickname has been occupied"}
 	}
 
-	err := configs.DB.Transaction(func(tx *gorm.DB) error {
+	err = configs.DB.Transaction(func(tx *gorm.DB) error {
 		err := s.UserRepository.CreaterUser(c, user)
 		if err != nil {
 			return err
+		}
+
+		auth := &models.UserAuth{
+			UserId:       user.UserId,
+			PasswordHash: encryptedPassword,
 		}
 		err = s.UserRepository.InjectAuth(c, auth)
 		if err != nil {
@@ -78,6 +111,15 @@ func (s *UserService) CheckUser(c *gin.Context) (int, models.Message) {
 	}
 
 	return http.StatusOK, models.Message{RetMessage: "nickname and email are acceptable"}
+}
+
+// EncryptPassword encrypts the given password using bcrypt.
+func EncryptPassword(password string) (string, error) {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return "", err
+	}
+	return string(hashedPassword), nil
 }
 
 func RandString() string {

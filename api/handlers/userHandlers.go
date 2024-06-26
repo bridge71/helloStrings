@@ -14,6 +14,11 @@ func NewUserHandler(userService *services.UserService) *UserHandler {
 }
 
 func (h *UserHandler) CheckUser(c *gin.Context) {
-	code, message := h.UserService.CheckUser(c)
+	code, message := h.UserService.CreateUser(c)
+	c.JSON(code, message)
+}
+
+func (h *UserHandler) AuthUser(c *gin.Context) {
+	code, message := h.UserService.AuthUser(c)
 	c.JSON(code, message)
 }
