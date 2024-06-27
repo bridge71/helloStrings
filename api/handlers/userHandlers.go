@@ -22,3 +22,8 @@ func (h *UserHandler) AuthUser(c *gin.Context) {
 	code, message := h.UserService.AuthUser(c)
 	c.JSON(code, message)
 }
+
+func (h *UserHandler) Test(c *gin.Context) {
+	code, message := h.UserService.Test(c)
+	c.JSON(code, message)
+}

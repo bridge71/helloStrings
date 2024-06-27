@@ -21,62 +21,63 @@ func NewUserService(userRepository *repositories.UserRepository) *UserService {
 	return &UserService{UserRepository: userRepository}
 }
 
-func (s *UserService) AccquireInfo(c *gin.Context) (*models.User, bool, bool) {
-	nickname, f1 := c.GetPostForm("nickname")
-	email, f2 := c.GetPostForm("email")
-
-	user := &models.User{
-		Nickname: nickname,
-		Email:    email,
-		// Level:    0,
-	}
-	return user, f1, f2
-}
-
 func (s *UserService) AuthUser(c *gin.Context) (int, models.Message) {
-	user, f1, f2 := s.AccquireInfo(c)
-	if !f1 && !f2 {
-		return http.StatusForbidden, models.Message{RetMessage: "misssing nickname or email"}
-	}
-	userAccess := &models.User{}
-	if f1 {
-		configs.DB.Where("nickname = ?", user.Nickname).First(userAccess)
-	} else {
-		configs.DB.Where("email = ?", user.Email).First(userAccess)
-	}
-
-	password, f := c.GetPostForm("password")
-	if !f {
+	user := &models.User{}
+	err := c.ShouldBindJSON(user)
+	if user.PasswordHash == "" {
 		return http.StatusForbidden, models.Message{RetMessage: "missing password"}
 	}
 
-	auth := &models.UserAuth{}
-	configs.DB.Where("userId = ?", userAccess.UserId).First(auth)
-
-	err := bcrypt.CompareHashAndPassword([]byte(auth.PasswordHash), []byte(password))
-	if err != nil {
-		return http.StatusNotAcceptable, models.Message{RetMessage: "wrong password"}
+	if user.Nickname == "" {
+		return http.StatusForbidden, models.Message{RetMessage: "missing nickname"}
 	}
-	return http.StatusOK, models.Message{RetMessage: "authentication successful"}
+
+	if err != nil {
+		return http.StatusForbidden, models.Message{RetMessage: "error bind"}
+	}
+	auth := &models.User{}
+	s.UserRepository.CheckUserName(c, auth, user.Nickname)
+
+	err = bcrypt.CompareHashAndPassword([]byte(auth.PasswordHash), []byte(user.PasswordHash))
+	if err != nil {
+		return http.StatusNotAcceptable, models.Message{RetMessage: "wrong nickname or password"}
+	}
+
+	user.PasswordHash = ""
+	return http.StatusOK, models.Message{
+		RetMessage: "authentication successful",
+		User:       *user,
+	}
+}
+
+func (s *UserService) Test(c *gin.Context) (int, models.Message) {
+	return http.StatusOK, models.Message{
+		RetMessage: "test successful",
+	}
 }
 
 func (s *UserService) CreateUser(c *gin.Context) (int, models.Message) {
-	user, f1, f2 := s.AccquireInfo(c)
-	if !f1 || user.Nickname == "" {
+	user := &models.User{}
+	err := c.ShouldBindJSON(user)
+	if user.Nickname == "" {
 		return http.StatusForbidden, models.Message{RetMessage: "nickname does not exist"}
 	}
-	if !f2 || user.Email == "" {
+	if user.Email == "" {
 		return http.StatusForbidden, models.Message{RetMessage: "email does not exist"}
 	}
 
-	password, f := c.GetPostForm("password")
-	if !f {
+	// password, f := c.GetPostForm("password")
+	if user.PasswordHash == "" {
 		return http.StatusForbidden, models.Message{RetMessage: "password does not exist"}
 	}
-	encryptedPassword, err := EncryptPassword(password)
-	for err != nil {
-		encryptedPassword, err = EncryptPassword(password)
+	if err != nil {
+		return http.StatusForbidden, models.Message{RetMessage: "something error"}
 	}
+	encryptedPassword, err := EncryptPassword(user.PasswordHash)
+	for err != nil {
+		encryptedPassword, err = EncryptPassword(user.PasswordHash)
+	}
+	user.PasswordHash = encryptedPassword
 
 	user1 := &models.User{}
 	user2 := &models.User{}
@@ -95,25 +96,21 @@ func (s *UserService) CreateUser(c *gin.Context) (int, models.Message) {
 		if err != nil {
 			return err
 		}
-
-		auth := &models.UserAuth{
-			UserId:       user.UserId,
-			PasswordHash: encryptedPassword,
-		}
-		err = s.UserRepository.InjectAuth(c, auth)
-		if err != nil {
-			return err
-		}
 		return nil
 	})
 	if err != nil {
-		return http.StatusInternalServerError, models.Message{RetMessage: "something unusual happened when insert user or auth into database"}
+		return http.StatusInternalServerError, models.Message{
+			RetMessage: "something unusual happened when insert user or auth into database",
+		}
 	}
 
-	return http.StatusOK, models.Message{RetMessage: "nickname and email are acceptable"}
+	user.PasswordHash = ""
+	return http.StatusOK, models.Message{
+		RetMessage: "nickname and email are acceptable",
+		User:       *user,
+	}
 }
 
-// EncryptPassword encrypts the given password using bcrypt.
 func EncryptPassword(password string) (string, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
