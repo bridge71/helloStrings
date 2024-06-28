@@ -3,6 +3,7 @@ package services
 import (
 	"net/http"
 	"os"
+	"regexp"
 	"strconv"
 
 	"github.com/bridge71/helloStrings/api/configs"
@@ -56,6 +57,8 @@ func (s *UserService) Test(c *gin.Context) (int, models.Message) {
 	}
 }
 
+var emailRegex = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
+
 func (s *UserService) CreateUser(c *gin.Context) (int, models.Message) {
 	user := &models.User{}
 	err := c.ShouldBindJSON(user)
@@ -64,6 +67,9 @@ func (s *UserService) CreateUser(c *gin.Context) (int, models.Message) {
 	}
 	if user.Email == "" {
 		return http.StatusForbidden, models.Message{RetMessage: "email does not exist"}
+	}
+	if !emailRegex.MatchString(user.Email) {
+		return http.StatusForbidden, models.Message{RetMessage: "illegal email"}
 	}
 
 	// password, f := c.GetPostForm("password")
@@ -84,11 +90,11 @@ func (s *UserService) CreateUser(c *gin.Context) (int, models.Message) {
 	s.UserRepository.CheckUserEmail(c, user1, user.Email)
 	s.UserRepository.CheckUserName(c, user2, user.Nickname)
 
-	if user1.Email != "" {
-		return http.StatusNotAcceptable, models.Message{RetMessage: "email has been occupied"}
-	}
 	if user2.Nickname != "" {
 		return http.StatusNotAcceptable, models.Message{RetMessage: "nickname has been occupied"}
+	}
+	if user1.Email != "" {
+		return http.StatusNotAcceptable, models.Message{RetMessage: "email has been occupied"}
 	}
 
 	err = configs.DB.Transaction(func(tx *gorm.DB) error {
