@@ -1,6 +1,7 @@
 package services
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 	"regexp"
@@ -79,23 +80,25 @@ func (s *UserService) CreateUser(c *gin.Context) (int, models.Message) {
 	if err != nil {
 		return http.StatusForbidden, models.Message{RetMessage: "something error"}
 	}
-	encryptedPassword, err := EncryptPassword(user.PasswordHash)
-	for err != nil {
-		encryptedPassword, err = EncryptPassword(user.PasswordHash)
-	}
-	user.PasswordHash = encryptedPassword
 
 	user1 := &models.User{}
 	user2 := &models.User{}
 	s.UserRepository.CheckUserEmail(c, user1, user.Email)
 	s.UserRepository.CheckUserName(c, user2, user.Nickname)
 
+	fmt.Println(user2.Nickname)
 	if user2.Nickname != "" {
 		return http.StatusNotAcceptable, models.Message{RetMessage: "nickname has been occupied"}
 	}
 	if user1.Email != "" {
 		return http.StatusNotAcceptable, models.Message{RetMessage: "email has been occupied"}
 	}
+
+	encryptedPassword, err := EncryptPassword(user.PasswordHash)
+	for err != nil {
+		encryptedPassword, err = EncryptPassword(user.PasswordHash)
+	}
+	user.PasswordHash = encryptedPassword
 
 	err = configs.DB.Transaction(func(tx *gorm.DB) error {
 		err := s.UserRepository.CreaterUser(c, user)
@@ -106,7 +109,7 @@ func (s *UserService) CreateUser(c *gin.Context) (int, models.Message) {
 	})
 	if err != nil {
 		return http.StatusInternalServerError, models.Message{
-			RetMessage: "something unusual happened when insert user or auth into database",
+			RetMessage: "something unusual happened when insert user into database",
 		}
 	}
 

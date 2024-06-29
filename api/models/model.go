@@ -1,5 +1,9 @@
 package models
 
+import (
+	"time"
+)
+
 type User struct {
 	// Nickname string `gorm:"column:nickname;unique;not null" `
 	// Email    string `gorm:"column:email;unique;not null" `
@@ -18,5 +22,18 @@ type User struct {
 //	}
 type Message struct {
 	RetMessage string
+	BookSale   []BookSale
 	User       User
+}
+
+type BookSale struct {
+	CreatedAt  time.Time
+	BookName   string `json:"bookName" gorm:"column:book_name;"`
+	Author     string `json:"author" gorm:"column:author;"`
+	Profession string `json:"profession" gorm:"column:profession;"`
+	Course     string `json:"course" gorm:"column:course;"`
+	Common     bool   `json:"common" gorm:"column:common;"`
+	IsSold     bool   `gorm:"default:false"`
+	UserId     uint   `json:"userId" gorm:"column:userId;"`
+	Value      uint   `json:"value" gorm:"column:value;"`
 }

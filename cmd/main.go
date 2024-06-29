@@ -14,6 +14,9 @@ func main() {
 	configs.LoadConfigs()
 	userService := services.NewUserService(&repositories.UserRepository{})
 	userHandler := handlers.NewUserHandler(userService)
-	routers.RegisterRoutes(router, userHandler)
+
+	saleService := services.NewSaleService(&repositories.SaleRepository{})
+	saleHandler := handlers.NewSaleHandler(saleService)
+	routers.RegisterRoutes(router, userHandler, saleHandler)
 	router.Run("127.0.0.1:7777")
 }

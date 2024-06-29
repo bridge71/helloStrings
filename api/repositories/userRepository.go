@@ -13,7 +13,7 @@ func NewUserRepository() *UserRepository {
 }
 
 func (r *UserRepository) CreaterUser(c *gin.Context, user *models.User) error {
-	return configs.DB.WithContext(c).Create(&user).Error
+	return configs.DB.WithContext(c).Create(user).Error
 }
 
 // func (r *UserRepository) InjectAuth(c *gin.Context, userauth *models.UserAuth) error {
