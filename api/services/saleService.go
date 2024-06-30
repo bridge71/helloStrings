@@ -19,11 +19,31 @@ func NewSaleService(userRepository *repositories.SaleRepository) *SaleService {
 	return &SaleService{SaleRepository: userRepository}
 }
 
+func (s *SaleService) CheckStringLen(bookSale models.BookSale) (bool, string) {
+	if len(bookSale.BookName) > 36 {
+		return true, "bookname is too long"
+	}
+	if len(bookSale.Author) > 36 {
+		return true, "author is too long"
+	}
+	if len(bookSale.Course) > 36 {
+		return true, "course is too long"
+	}
+	if len(bookSale.Profession) > 36 {
+		return true, "profession is too long"
+	}
+	return false, ""
+}
+
 func (s *SaleService) BookSaleSubmit(c *gin.Context) (int, models.Message) {
 	bookSale := &models.BookSale{}
 	err := c.ShouldBindJSON(bookSale)
 	if err != nil {
 		return http.StatusForbidden, models.Message{RetMessage: "something error"}
+	}
+	isLong, message := s.CheckStringLen(*bookSale)
+	if isLong {
+		return http.StatusForbidden, models.Message{RetMessage: message}
 	}
 	err = configs.DB.Transaction(func(tx *gorm.DB) error {
 		err := s.SaleRepository.BookSale(c, bookSale)

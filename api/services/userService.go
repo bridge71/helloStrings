@@ -6,6 +6,7 @@ import (
 	"os"
 	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/bridge71/helloStrings/api/configs"
 	"github.com/bridge71/helloStrings/api/models"
@@ -26,17 +27,22 @@ func NewUserService(userRepository *repositories.UserRepository) *UserService {
 func (s *UserService) AuthUser(c *gin.Context) (int, models.Message) {
 	user := &models.User{}
 	err := c.ShouldBindJSON(user)
+	if err != nil {
+		return http.StatusForbidden, models.Message{RetMessage: "error bind"}
+	}
+
+	isLong, message := s.CheckStringLen(*user)
+	if isLong {
+		return http.StatusForbidden, models.Message{RetMessage: message}
+	}
+
 	if user.PasswordHash == "" {
 		return http.StatusForbidden, models.Message{RetMessage: "missing password"}
 	}
-
 	if user.Nickname == "" {
 		return http.StatusForbidden, models.Message{RetMessage: "missing nickname"}
 	}
 
-	if err != nil {
-		return http.StatusForbidden, models.Message{RetMessage: "error bind"}
-	}
 	auth := &models.User{}
 	s.UserRepository.CheckUserName(c, auth, user.Nickname)
 
@@ -45,10 +51,28 @@ func (s *UserService) AuthUser(c *gin.Context) (int, models.Message) {
 		return http.StatusNotAcceptable, models.Message{RetMessage: "wrong nickname or password"}
 	}
 
-	user.PasswordHash = ""
+	auth.PasswordHash = ""
+	fmt.Println(*auth)
 	return http.StatusOK, models.Message{
 		RetMessage: "authentication successful",
-		User:       *user,
+		User:       *auth,
+	}
+}
+
+func (s *UserService) GetInfoUser(c *gin.Context) (int, models.Message) {
+	user := &models.User{}
+	err := c.ShouldBindJSON(user)
+	if err != nil {
+		return http.StatusForbidden, models.Message{RetMessage: "error bind"}
+	}
+	auth := &models.User{}
+	s.UserRepository.GetInfoUser(c, auth, user.UserId)
+
+	auth.PasswordHash = ""
+	auth.Email = strings.Split(auth.Email, "@")[0]
+	return http.StatusOK, models.Message{
+		RetMessage: "get information successful",
+		User:       *auth,
 	}
 }
 
@@ -60,9 +84,26 @@ func (s *UserService) Test(c *gin.Context) (int, models.Message) {
 
 var emailRegex = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 
+func (s *UserService) CheckStringLen(user models.User) (bool, string) {
+	if len(user.Nickname) > 36 {
+		return true, "nickname is too long"
+	}
+	if len(user.PasswordHash) > 36 {
+		return true, "password is too long"
+	}
+	if len(user.Email) > 36 {
+		return true, "email is too long"
+	}
+	return false, ""
+}
+
 func (s *UserService) CreateUser(c *gin.Context) (int, models.Message) {
 	user := &models.User{}
 	err := c.ShouldBindJSON(user)
+	isLong, message := s.CheckStringLen(*user)
+	if isLong {
+		return http.StatusForbidden, models.Message{RetMessage: message}
+	}
 	if user.Nickname == "" {
 		return http.StatusForbidden, models.Message{RetMessage: "nickname does not exist"}
 	}
@@ -72,7 +113,10 @@ func (s *UserService) CreateUser(c *gin.Context) (int, models.Message) {
 	if !emailRegex.MatchString(user.Email) {
 		return http.StatusForbidden, models.Message{RetMessage: "illegal email"}
 	}
-
+	qqEmail := strings.Split(user.Email, "@")[1]
+	if qqEmail != "qq.com" {
+		return http.StatusForbidden, models.Message{RetMessage: "not qqemail"}
+	}
 	// password, f := c.GetPostForm("password")
 	if user.PasswordHash == "" {
 		return http.StatusForbidden, models.Message{RetMessage: "password does not exist"}

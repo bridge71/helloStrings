@@ -16,6 +16,7 @@ func NewUserRouter(handler *handlers.UserHandler) *UserRouter {
 func RegisterRoutes(router *gin.Engine, userHandler *handlers.UserHandler, saleHandler *handlers.SaleHandler) {
 	router.POST("/user/register", userHandler.CheckUser)
 	router.POST("/user/login", userHandler.AuthUser)
+	router.POST("/user/info", userHandler.GetInfoUser)
 	router.GET("/test", userHandler.Test)
 
 	router.POST("/sale/book/submit", saleHandler.BookCreateSale)

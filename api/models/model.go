@@ -1,8 +1,6 @@
 package models
 
-import (
-	"time"
-)
+import "time"
 
 type User struct {
 	// Nickname string `gorm:"column:nickname;unique;not null" `
@@ -10,9 +8,8 @@ type User struct {
 	Nickname     string `gorm:"column:nickname;unique;not null" json:"nickname"`
 	Email        string `gorm:"column:email;unique;not null" json:"email"`
 	PasswordHash string `gorm:"column:passwordHash" json:"password"`
-
-	UserId uint `gorm:"column:userId;primaryKey"`
-	Level  int  `gorm:"default:1"`
+	UserId       uint   `gorm:"column:userId;primaryKey" json:"userId"`
+	Level        int    `gorm:"default:1" json:"level"`
 }
 
 //	type UserAuth struct {
@@ -32,8 +29,9 @@ type BookSale struct {
 	Author     string `json:"author" gorm:"column:author;"`
 	Profession string `json:"profession" gorm:"column:profession;"`
 	Course     string `json:"course" gorm:"column:course;"`
-	Common     bool   `json:"common" gorm:"column:common;"`
-	IsSold     bool   `gorm:"default:false"`
-	UserId     uint   `json:"userId" gorm:"column:userId;"`
-	Value      uint   `json:"value" gorm:"column:value;"`
+	// Created    int64  `gorm:"autoCreateTime"`
+	Common bool `json:"common" gorm:"column:common;"`
+	IsSold bool `gorm:"default:false"`
+	UserId uint `json:"userId" gorm:"column:userId;"`
+	Value  uint `json:"value" gorm:"column:value;"`
 }

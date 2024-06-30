@@ -20,6 +20,10 @@ func (r *UserRepository) CreaterUser(c *gin.Context, user *models.User) error {
 // 	return configs.DB.WithContext(c).Create(&userauth).Error
 // }
 
+func (r *UserRepository) GetInfoUser(c *gin.Context, user *models.User, userId uint) {
+	configs.DB.WithContext(c).Where("userId = ?", userId).Find(user)
+}
+
 func (r *UserRepository) CheckUserName(c *gin.Context, user *models.User, nickname string) {
 	configs.DB.WithContext(c).Where("nickname = ?", nickname).Find(user)
 }

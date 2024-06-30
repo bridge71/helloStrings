@@ -18,6 +18,11 @@ func (h *UserHandler) CheckUser(c *gin.Context) {
 	c.JSON(code, message)
 }
 
+func (h *UserHandler) GetInfoUser(c *gin.Context) {
+	code, message := h.UserService.GetInfoUser(c)
+	c.JSON(code, message)
+}
+
 func (h *UserHandler) AuthUser(c *gin.Context) {
 	code, message := h.UserService.AuthUser(c)
 	c.JSON(code, message)
