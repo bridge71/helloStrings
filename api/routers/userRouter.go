@@ -20,9 +20,6 @@ func RegisterRoutes(router *gin.Engine, userHandler *handlers.UserHandler, saleH
 	router.GET("/test", userHandler.Test)
 
 	router.POST("/sale/book/submit", saleHandler.BookCreateSale)
-	router.POST("/sale/book/name", saleHandler.BookGetName)
-	router.POST("/sale/book/profession", saleHandler.BookGetProfession)
-	router.POST("/sale/book/course", saleHandler.BookGetCourse)
-	router.POST("/sale/book/author", saleHandler.BookGetAuthor)
+	router.POST("/sale/book/by", saleHandler.BookGetBy)
 	router.POST("/sale/book/all", saleHandler.BookGet)
 }

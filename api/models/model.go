@@ -24,14 +24,18 @@ type Message struct {
 }
 
 type BookSale struct {
-	CreatedAt  time.Time
-	BookName   string `json:"bookName" gorm:"column:book_name;"`
-	Author     string `json:"author" gorm:"column:author;"`
-	Profession string `json:"profession" gorm:"column:profession;"`
-	Course     string `json:"course" gorm:"column:course;"`
-	// Created    int64  `gorm:"autoCreateTime"`
-	Common bool `json:"common" gorm:"column:common;"`
-	IsSold bool `gorm:"default:false"`
-	UserId uint `json:"userId" gorm:"column:userId;"`
-	Value  uint `json:"value" gorm:"column:value;"`
+	CreatedAt  time.Time `gorm:"autoCreateTime"`
+	Title      string    `json:"title" gorm:"column:title;"`
+	Author     string    `json:"author" gorm:"column:author;"`
+	Profession string    `json:"profession" gorm:"column:profession;default:公共课"`
+	Course     string    `json:"course" gorm:"column:course;"`
+	Common     bool      `json:"common" gorm:"column:common;"`
+	IsSold     bool      `gorm:"default:false"`
+	UserId     uint      `json:"userId" gorm:"column:userId;"`
+	Value      uint      `json:"value" gorm:"column:value;"`
+}
+
+type BookBy struct {
+	Key string `json:"key"`
+	By  string `json:"by"`
 }

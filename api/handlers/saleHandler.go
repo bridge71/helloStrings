@@ -18,23 +18,8 @@ func (h *SaleHandler) BookCreateSale(c *gin.Context) {
 	c.JSON(code, message)
 }
 
-func (h *SaleHandler) BookGetName(c *gin.Context) {
-	code, message := h.SaleService.BookGetName(c)
-	c.JSON(code, message)
-}
-
-func (h *SaleHandler) BookGetAuthor(c *gin.Context) {
-	code, message := h.SaleService.BookGetAuthor(c)
-	c.JSON(code, message)
-}
-
-func (h *SaleHandler) BookGetCourse(c *gin.Context) {
-	code, message := h.SaleService.BookGetCourse(c)
-	c.JSON(code, message)
-}
-
-func (h *SaleHandler) BookGetProfession(c *gin.Context) {
-	code, message := h.SaleService.BookGetProfession(c)
+func (h *SaleHandler) BookGetBy(c *gin.Context) {
+	code, message := h.SaleService.BookGetBy(c)
 	c.JSON(code, message)
 }
 

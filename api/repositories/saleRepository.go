@@ -21,11 +21,11 @@ func (r *SaleRepository) BookGetProfession(c *gin.Context, bookSale *[]models.Bo
 }
 
 func (r *SaleRepository) BookGetAuthor(c *gin.Context, bookSale *[]models.BookSale, author string) {
-	configs.DB.WithContext(c).Where("author = ?", author).Order("created_at desc").Find(bookSale)
+	configs.DB.WithContext(c).Where("author LIKE ?", "%"+author+"%").Order("created_at desc").Find(bookSale)
 }
 
-func (r *SaleRepository) BookGetName(c *gin.Context, bookSale *[]models.BookSale, name string) {
-	configs.DB.WithContext(c).Where("book_name LIKE ?", "%"+name+"%").Order("created_at desc").Find(bookSale)
+func (r *SaleRepository) BookGetTitle(c *gin.Context, bookSale *[]models.BookSale, title string) {
+	configs.DB.WithContext(c).Where("title LIKE ?", "%"+title+"%").Order("created_at desc").Find(bookSale)
 }
 
 func (r *SaleRepository) BookGetCourse(c *gin.Context, bookSale *[]models.BookSale, course string) {
