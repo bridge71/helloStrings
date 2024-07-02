@@ -12,11 +12,17 @@ import (
 func main() {
 	router := gin.Default()
 	configs.LoadConfigs()
+
 	userService := services.NewUserService(&repositories.UserRepository{})
 	userHandler := handlers.NewUserHandler(userService)
 
 	saleService := services.NewSaleService(&repositories.SaleRepository{})
 	saleHandler := handlers.NewSaleHandler(saleService)
-	routers.RegisterRoutes(router, userHandler, saleHandler)
+
+	postService := services.NewPostService(&repositories.PostRepository{})
+	postHandler := handlers.NewPostHandler(postService)
+
+	routers.RegisterRoutes(router, userHandler, saleHandler, postHandler)
+
 	router.Run("127.0.0.1:7777")
 }

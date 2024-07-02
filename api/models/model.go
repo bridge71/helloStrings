@@ -12,11 +12,16 @@ type User struct {
 	Level        int    `gorm:"default:1" json:"level"`
 }
 
-//	type UserAuth struct {
-//		Password string `gorm:"column:passwordHash" json:"password"`
-//		Nickname string `gorm:"column:nickname;unique;not null" json:"nickname"`
-//		UserId   uint   `gorm:"column:userId"`
-//	}
+type IP struct {
+	CreatedAt time.Time `gorm:"autoCreateTime"`
+	IP        string    `gorm:"column:IP" json:"ip"`
+	Province  string    `gorm:"column:province" json:"province"`
+	City      string    `gorm:"column:city" json:"city"`
+	District  string    `gorm:"column:district" json:"district"`
+	Lat       float32   `gorm:"column:lat" json:"lat"`
+	Lng       float32   `gorm:"column:lng" json:"lng"`
+	UserId    uint      `gorm:"column:userId" json:"userId"`
+}
 type Message struct {
 	RetMessage string
 	BookSale   []BookSale
@@ -38,4 +43,19 @@ type BookSale struct {
 type BookBy struct {
 	Key string `json:"key"`
 	By  string `json:"by"`
+}
+
+type Post struct {
+	CreatedAt time.Time `gorm:"autoCreateTime"`
+	Title     string    `json:"title" gorm:"column:title;"`
+	Nickname  string    `gorm:"column:nickname;not null" json:"nickname"`
+	PostId    uint      `gorm:"column:postId;primaryKey" json:"postId"`
+	Likes     int       `gorm:"column:likes;" json:"likes"`
+	IsShown   bool      `gorm:"default:true" json:"isShown"`
+	UserId    uint      `json:"userId" gorm:"column:userId;"`
+}
+
+type PostContent struct {
+	Content string `gorm:"column:content" json:"content"`
+	PostId  uint   `gorm:"column:postId"`
 }

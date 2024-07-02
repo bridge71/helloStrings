@@ -12,8 +12,12 @@ func NewUserRepository() *UserRepository {
 	return &UserRepository{}
 }
 
-func (r *UserRepository) CreaterUser(c *gin.Context, user *models.User) error {
+func (r *UserRepository) CreateUser(c *gin.Context, user *models.User) error {
 	return configs.DB.WithContext(c).Create(user).Error
+}
+
+func (r *UserRepository) StoreIP(c *gin.Context, IP *models.IP) error {
+	return configs.DB.WithContext(c).Create(IP).Error
 }
 
 // func (r *UserRepository) InjectAuth(c *gin.Context, userauth *models.UserAuth) error {
