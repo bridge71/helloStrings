@@ -23,9 +23,11 @@ type IP struct {
 	UserId    uint      `gorm:"column:userId" json:"userId"`
 }
 type Message struct {
-	RetMessage string
-	BookSale   []BookSale
-	User       User
+	RetMessage  string
+	BookSale    []BookSale
+	Post        []Post
+	PostContent PostContent
+	User        User
 }
 
 type BookSale struct {

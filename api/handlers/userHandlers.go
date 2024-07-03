@@ -28,8 +28,8 @@ func (h *UserHandler) GetInfoUser(c *gin.Context) {
 	c.JSON(code, message)
 }
 
-func (h *UserHandler) AuthUser(c *gin.Context) {
-	code, message := h.UserService.AuthUser(c)
+func (h *UserHandler) Login(c *gin.Context) {
+	code, message := h.UserService.Login(c)
 	c.JSON(code, message)
 }
 

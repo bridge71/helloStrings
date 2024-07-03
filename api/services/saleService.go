@@ -64,15 +64,6 @@ func (s *SaleService) BookGetBy(c *gin.Context) (int, models.Message) {
 	case "author":
 		s.SaleRepository.BookGetAuthor(c, &bookSale, by.Key)
 	}
-	// if by.By == "title" {
-	// 	s.SaleRepository.BookGetName(c, &bookSale, by.Key)
-	// } else if by.By == "course" {
-	// 	s.SaleRepository.BookGetCourse(c, &bookSale, by.Key)
-	// } else if by.By == "profession" {
-	// 	s.SaleRepository.BookGetProfession(c, &bookSale, by.Key)
-	// } else if by.By == "author" {
-	// 	s.SaleRepository.BookGetAuthor(c, &bookSale, by.Key)
-	// }
 	return http.StatusOK, models.Message{BookSale: bookSale}
 }
 
@@ -82,6 +73,8 @@ func (s *SaleService) BookSaleSubmit(c *gin.Context) (int, models.Message) {
 	if err != nil {
 		return http.StatusForbidden, models.Message{RetMessage: "Bind error"}
 	}
+	bookSale.UserId = GetUserId(c)
+
 	isLong, message := s.CheckStringLen(*bookSale)
 	if isLong {
 		return http.StatusForbidden, models.Message{RetMessage: message}

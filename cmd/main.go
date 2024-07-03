@@ -24,5 +24,13 @@ func main() {
 
 	routers.RegisterRoutes(router, userHandler, saleHandler, postHandler)
 
+	router.Static("/static", "../../contents")
+
+	// Example route to handle image requests
+	router.GET("/contents/:filename", func(c *gin.Context) {
+		filename := c.Param("filename")
+		c.File("../../contents/" + filename)
+	})
+
 	router.Run("127.0.0.1:7777")
 }

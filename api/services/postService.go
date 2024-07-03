@@ -38,6 +38,8 @@ func (s *PostService) CreatePost(c *gin.Context) (int, models.Message) {
 		fmt.Println("error json:", err)
 		return http.StatusForbidden, models.Message{RetMessage: "error json"}
 	}
+	post.UserId = GetUserId(c)
+	post.Nickname = GetNickname(c)
 	postContent := &models.PostContent{}
 	err = json.Unmarshal(body, postContent)
 	if err != nil {
@@ -73,7 +75,9 @@ func (s *PostService) CreatePost(c *gin.Context) (int, models.Message) {
 
 			fmt.Println(hashString)
 			filePath := "/home/bridge71/myTry/contents/" + hashString + "." + imageType
-			URL := "http://localhost:7777/contents/" + hashString + "." + imageType
+			URL := "http://localhost:7777/static/" + hashString + "." + imageType
+			// URL := "/home/bridge71/myTry/contents/" + hashString + "." + imageType
+			// URL := "https://store.ymgal.games/topic/content/48/48ac6b8e80c7453cb0d7c0905a85d878.jpg"
 			err = os.WriteFile(filePath, imgBytes, 0666)
 			if err != nil {
 				fmt.Println(err)
@@ -81,7 +85,7 @@ func (s *PostService) CreatePost(c *gin.Context) (int, models.Message) {
 				return err
 			}
 
-			newTag := fmt.Sprintf(`<n-img src="%s"></n-img>`, URL)
+			newTag := fmt.Sprintf(`<n-image src="%s"/>`, URL)
 			postContent.Content = re.ReplaceAllString(postContent.Content, newTag)
 		}
 		err := s.PostRepository.CreateInfo(c, post)
@@ -106,5 +110,42 @@ func (s *PostService) CreatePost(c *gin.Context) (int, models.Message) {
 	}
 	return http.StatusOK, models.Message{
 		RetMessage: "post successfully",
+	}
+}
+
+func (s *PostService) GetAllPost(c *gin.Context) (int, models.Message) {
+	var posts []models.Post
+	s.PostRepository.PostGet(c, &posts)
+	return http.StatusOK, models.Message{
+		RetMessage: "get post successfully",
+		Post:       posts,
+	}
+}
+
+func (s *PostService) GetPostContent(c *gin.Context) (int, models.Message) {
+	post := &models.Post{}
+	err := c.ShouldBindJSON(post)
+	if err != nil {
+		return http.StatusForbidden, models.Message{RetMessage: "Bind error"}
+	}
+	postContent := &models.PostContent{}
+	s.PostRepository.PostContentGet(c, postContent, post.PostId)
+	return http.StatusOK, models.Message{
+		RetMessage:  "get post successfully",
+		PostContent: *postContent,
+	}
+}
+
+func (s *PostService) GetPostTitle(c *gin.Context) (int, models.Message) {
+	post := &models.Post{}
+	err := c.ShouldBindJSON(post)
+	if err != nil {
+		return http.StatusForbidden, models.Message{RetMessage: "Bind error"}
+	}
+	var posts []models.Post
+	s.PostRepository.PostGetTitle(c, &posts, post.Title)
+	return http.StatusOK, models.Message{
+		RetMessage: "get post successfully",
+		Post:       posts,
 	}
 }
