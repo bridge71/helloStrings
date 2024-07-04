@@ -32,3 +32,38 @@ func (h *PostHandler) GetPostContent(c *gin.Context) {
 	code, message := h.PostService.GetPostContent(c)
 	c.JSON(code, message)
 }
+
+func (h *PostHandler) CommentGetPostId(c *gin.Context) {
+	code, message := h.PostService.CommentGetPostId(c)
+	c.JSON(code, message)
+}
+
+func (h *PostHandler) CommentGetUserId(c *gin.Context) {
+	code, message := h.PostService.CommentGetUserId(c)
+	c.JSON(code, message)
+}
+
+func (h *PostHandler) CreateComment(c *gin.Context) {
+	code, message := h.PostService.CreateComment(c)
+	c.JSON(code, message)
+}
+
+func (h *PostHandler) PostLikesChange(c *gin.Context) {
+	code, message := h.PostService.PostLikesChange(c)
+	c.JSON(code, message)
+}
+
+func (h *PostHandler) PostLikesRead(c *gin.Context) {
+	code, message := h.PostService.PostLikesRead(c)
+	c.JSON(code, message)
+}
+
+func (h *PostHandler) PostCommentsAdd(c *gin.Context) {
+	code, message := h.PostService.PostCommentsAdd(c)
+	c.JSON(code, message)
+}
+
+func (h *PostHandler) PostCommentsRead(c *gin.Context) {
+	code, message := h.PostService.PostCommentsRead(c)
+	c.JSON(code, message)
+}

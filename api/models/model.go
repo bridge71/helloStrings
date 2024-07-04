@@ -26,6 +26,9 @@ type Message struct {
 	RetMessage  string
 	BookSale    []BookSale
 	Post        []Post
+	Comment     []Comment
+	CommentMark []CommentMark
+	Likes       []Likes
 	PostContent PostContent
 	User        User
 }
@@ -60,4 +63,23 @@ type Post struct {
 type PostContent struct {
 	Content string `gorm:"column:content" json:"content"`
 	PostId  uint   `gorm:"column:postId"`
+}
+
+type Comment struct {
+	CreatedAt time.Time `gorm:"autoCreateTime"`
+	Nickname  string    `gorm:"column:nickname;not null" json:"nickname"`
+	Content   string    `gorm:"column:content" json:"content"`
+	PostId    uint      `gorm:"column:postId"`
+	UserId    uint      `json:"userId" gorm:"column:userId;"`
+	IsShown   bool      `gorm:"default:true" json:"isShown"`
+}
+
+type Likes struct {
+	PostId uint `gorm:"column:postId"`
+	UserId uint `json:"userId" gorm:"column:userId;"`
+}
+
+type CommentMark struct {
+	PostId uint `gorm:"column:postId"`
+	UserId uint `json:"userId" gorm:"column:userId;"`
 }

@@ -6,10 +6,12 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"html"
 	"io"
 	"net/http"
 	"os"
 	"regexp"
+	"strings"
 
 	"github.com/bridge71/helloStrings/api/configs"
 	"github.com/bridge71/helloStrings/api/models"
@@ -54,7 +56,8 @@ func (s *PostService) CreatePost(c *gin.Context) (int, models.Message) {
 		re := regexp.MustCompile(`<img src="data:image/([^;]+);base64,([^"]+)"[^>]*>`)
 		matches := re.FindAllStringSubmatch(postContent.Content, -1)
 
-		for _, match := range matches {
+		for index, match := range matches {
+			fmt.Println("index ", index)
 			if len(match) < 3 {
 				fmt.Println("match error")
 				continue
@@ -85,9 +88,17 @@ func (s *PostService) CreatePost(c *gin.Context) (int, models.Message) {
 				return err
 			}
 
-			newTag := fmt.Sprintf(`<n-image src="%s"/>`, URL)
-			postContent.Content = re.ReplaceAllString(postContent.Content, newTag)
+			newTag := fmt.Sprintf(`<img width="720" src="%s">`, URL)
+			fmt.Println("newTag", newTag)
+			postContent.Content = re.ReplaceAllStringFunc(postContent.Content, func(s string) string {
+				if s == match[0] {
+					return newTag
+				}
+				return s
+			})
+			// postContent.Content = re.ReplaceAllString(postContent.Content, newTag)
 		}
+		// postContent.Content = strings.ReplaceAll(html.EscapeString(postContent.Content), "\n", "<br>")
 		err := s.PostRepository.CreateInfo(c, post)
 		if err != nil {
 			fmt.Println("CreateInfo error")
@@ -113,12 +124,69 @@ func (s *PostService) CreatePost(c *gin.Context) (int, models.Message) {
 	}
 }
 
+func (s *PostService) CreateComment(c *gin.Context) (int, models.Message) {
+	comment := &models.Comment{}
+	err := c.ShouldBindJSON(comment)
+	if err != nil {
+		return http.StatusInternalServerError, models.Message{
+			RetMessage: "error bind of post",
+		}
+	}
+
+	comment.UserId = GetUserId(c)
+	comment.Nickname = GetNickname(c)
+	comment.Content = strings.ReplaceAll(html.EscapeString(comment.Content), "\n", "<br>")
+	err = configs.DB.Transaction(func(tx *gorm.DB) error {
+		err := s.PostRepository.CreateComment(c, comment)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+	if err != nil {
+		return http.StatusInternalServerError, models.Message{
+			RetMessage: "something unusual happened when insert comment into database",
+		}
+	}
+	return http.StatusOK, models.Message{
+		RetMessage: "comment successfully",
+	}
+}
+
 func (s *PostService) GetAllPost(c *gin.Context) (int, models.Message) {
 	var posts []models.Post
 	s.PostRepository.PostGet(c, &posts)
 	return http.StatusOK, models.Message{
 		RetMessage: "get post successfully",
 		Post:       posts,
+	}
+}
+
+func (s *PostService) CommentGetPostId(c *gin.Context) (int, models.Message) {
+	post := &models.Post{}
+	err := c.ShouldBindJSON(post)
+	if err != nil {
+		return http.StatusForbidden, models.Message{RetMessage: "Bind error"}
+	}
+	var comments []models.Comment
+	s.PostRepository.CommentGetPostId(c, &comments, post.PostId)
+	return http.StatusOK, models.Message{
+		RetMessage: "get post successfully",
+		Comment:    comments,
+	}
+}
+
+func (s *PostService) CommentGetUserId(c *gin.Context) (int, models.Message) {
+	user := &models.User{}
+	err := c.ShouldBindJSON(user)
+	if err != nil {
+		return http.StatusForbidden, models.Message{RetMessage: "Bind error"}
+	}
+	var comments []models.Comment
+	s.PostRepository.CommentGetUserId(c, &comments, user.UserId)
+	return http.StatusOK, models.Message{
+		RetMessage: "get post successfully",
+		Comment:    comments,
 	}
 }
 
@@ -140,6 +208,7 @@ func (s *PostService) GetPostTitle(c *gin.Context) (int, models.Message) {
 	post := &models.Post{}
 	err := c.ShouldBindJSON(post)
 	if err != nil {
+		fmt.Println(err)
 		return http.StatusForbidden, models.Message{RetMessage: "Bind error"}
 	}
 	var posts []models.Post
@@ -147,5 +216,98 @@ func (s *PostService) GetPostTitle(c *gin.Context) (int, models.Message) {
 	return http.StatusOK, models.Message{
 		RetMessage: "get post successfully",
 		Post:       posts,
+	}
+}
+
+func (s *PostService) PostLikesChange(c *gin.Context) (int, models.Message) {
+	post := &models.Post{}
+	err := c.ShouldBindJSON(post)
+	if err != nil {
+		fmt.Println(err)
+		return http.StatusForbidden, models.Message{RetMessage: "post bind error"}
+	}
+	userId := GetUserId(c)
+	likes := &models.Likes{
+		UserId: userId,
+		PostId: post.PostId,
+	}
+	been := false
+	err = configs.DB.Transaction(func(tx *gorm.DB) error {
+		likesGet := &models.Likes{}
+		s.PostRepository.PostLikeQuery(c, likesGet, userId, post.PostId)
+		var err error
+		if likesGet.PostId != 0 {
+			err = s.PostRepository.PostLikeDel(c, likes)
+			if err != nil {
+				return err
+			}
+			err = s.PostRepository.PostLikeDecrease(c, post)
+			been = true
+		} else {
+			err = s.PostRepository.PostLikeAdd(c, likes)
+			if err != nil {
+				return err
+			}
+			err = s.PostRepository.PostLikeIncrease(c, post)
+		}
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+	if err != nil {
+		return http.StatusInternalServerError, models.Message{
+			RetMessage: "something unusual happened when change likes",
+		}
+	}
+
+	var message string
+	if been {
+		message = "已取消"
+	} else {
+		message = "添加成功"
+	}
+	return http.StatusOK, models.Message{
+		RetMessage: message,
+	}
+}
+
+func (s *PostService) PostLikesRead(c *gin.Context) (int, models.Message) {
+	userId := GetUserId(c)
+	var likes []models.Likes
+	s.PostRepository.PostLikeRead(c, &likes, userId)
+
+	return http.StatusOK, models.Message{
+		RetMessage: "changed likes",
+		Likes:      likes,
+	}
+}
+
+func (s *PostService) PostCommentsAdd(c *gin.Context) (int, models.Message) {
+	post := &models.Post{}
+	err := c.ShouldBindJSON(post)
+	if err != nil {
+		fmt.Println(err)
+		return http.StatusForbidden, models.Message{RetMessage: "post bind error"}
+	}
+	userId := GetUserId(c)
+	commentMark := &models.CommentMark{
+		UserId: userId,
+		PostId: post.PostId,
+	}
+	s.PostRepository.PostCommentMarkAdd(c, commentMark)
+
+	return http.StatusOK, models.Message{
+		RetMessage: "comments",
+	}
+}
+
+func (s *PostService) PostCommentsRead(c *gin.Context) (int, models.Message) {
+	userId := GetUserId(c)
+	var commentMark []models.CommentMark
+	s.PostRepository.PostCommentMarkRead(c, &commentMark, userId)
+	return http.StatusOK, models.Message{
+		RetMessage:  "read comments",
+		CommentMark: commentMark,
 	}
 }

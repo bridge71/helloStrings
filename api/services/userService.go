@@ -117,11 +117,11 @@ func (s *UserService) Login(c *gin.Context) (int, models.Message) {
 	cookie, err := c.Cookie("isLogin")
 	if err != nil || cookie != "ture" {
 		cookieUserId := strconv.FormatUint(uint64(auth.UserId), 10)
-		c.SetCookie("userId", cookieUserId, 3600, "/", "localhost", false, true)
+		c.SetCookie("userId", cookieUserId, 24*3600, "/", "localhost", false, true)
 		cookieLevel := strconv.FormatUint(uint64(auth.Level), 10)
-		c.SetCookie("level", cookieLevel, 3600, "/", "localhost", false, true)
-		c.SetCookie("nickname", auth.Nickname, 3600, "/", "localhost", false, true)
-		c.SetCookie("isLogin", "true", 3600, "/", "localhost", false, true)
+		c.SetCookie("level", cookieLevel, 24*3600, "/", "localhost", false, true)
+		c.SetCookie("nickname", auth.Nickname, 24*3600, "/", "localhost", false, true)
+		c.SetCookie("isLogin", "true", 24*3600, "/", "localhost", false, true)
 	}
 	return http.StatusOK, models.Message{
 		RetMessage: "authentication successful",

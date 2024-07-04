@@ -33,9 +33,25 @@ func RegisterRoutes(router *gin.Engine, userHandler *handlers.UserHandler, saleH
 		postR := authorized.Group("/post")
 		{
 			postR.POST("/submit", postHandler.CreatePost)
-			postR.GET("/all", postHandler.GetPostAll)
+			postR.GET("/fetch", postHandler.GetPostAll)
 			postR.POST("/title", postHandler.GetPostTitle)
 			postR.POST("/content", postHandler.GetPostContent)
+			commentR := postR.Group("/comment")
+			{
+				commentR.POST("/submit", postHandler.CreateComment)
+				commentR.POST("/fetch/postId", postHandler.CommentGetPostId)
+				commentR.POST("/fetch/userId", postHandler.CommentGetUserId)
+			}
+			markR := postR.Group("/mark")
+			{
+				markR.POST("/add", postHandler.PostCommentsAdd)
+				markR.POST("/read", postHandler.PostCommentsRead)
+			}
+			likesR := postR.Group("/likes")
+			{
+				likesR.POST("/change", postHandler.PostLikesChange)
+				likesR.POST("/read", postHandler.PostLikesRead)
+			}
 		}
 	}
 }
