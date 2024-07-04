@@ -13,57 +13,57 @@ func NewPostHandler(postService *services.PostService) *PostHandler {
 	return &PostHandler{PostService: postService}
 }
 
-func (h *PostHandler) CreatePost(c *gin.Context) {
-	code, message := h.PostService.CreatePost(c)
+func (h *PostHandler) PostCreate(c *gin.Context) {
+	code, message := h.PostService.PostCreate(c)
 	c.JSON(code, message)
 }
 
-func (h *PostHandler) GetPostAll(c *gin.Context) {
-	code, message := h.PostService.GetAllPost(c)
+func (h *PostHandler) PostFetch(c *gin.Context) {
+	code, message := h.PostService.PostFetch(c)
 	c.JSON(code, message)
 }
 
-func (h *PostHandler) GetPostTitle(c *gin.Context) {
-	code, message := h.PostService.GetPostTitle(c)
+func (h *PostHandler) PostReadTitle(c *gin.Context) {
+	code, message := h.PostService.PostReadTitle(c)
 	c.JSON(code, message)
 }
 
-func (h *PostHandler) GetPostContent(c *gin.Context) {
-	code, message := h.PostService.GetPostContent(c)
+func (h *PostHandler) ContentReadPostId(c *gin.Context) {
+	code, message := h.PostService.ContentReadPostId(c)
 	c.JSON(code, message)
 }
 
-func (h *PostHandler) CommentGetPostId(c *gin.Context) {
-	code, message := h.PostService.CommentGetPostId(c)
+func (h *PostHandler) CommentReadPostId(c *gin.Context) {
+	code, message := h.PostService.CommentReadPostId(c)
 	c.JSON(code, message)
 }
 
-func (h *PostHandler) CommentGetUserId(c *gin.Context) {
-	code, message := h.PostService.CommentGetUserId(c)
+func (h *PostHandler) CommentReadUserId(c *gin.Context) {
+	code, message := h.PostService.CommentReadUserId(c)
 	c.JSON(code, message)
 }
 
-func (h *PostHandler) CreateComment(c *gin.Context) {
-	code, message := h.PostService.CreateComment(c)
+func (h *PostHandler) CommentCreate(c *gin.Context) {
+	code, message := h.PostService.CommentCreate(c)
 	c.JSON(code, message)
 }
 
-func (h *PostHandler) PostLikesChange(c *gin.Context) {
-	code, message := h.PostService.PostLikesChange(c)
+func (h *PostHandler) LikesChange(c *gin.Context) {
+	code, message := h.PostService.LikesChange(c)
 	c.JSON(code, message)
 }
 
-func (h *PostHandler) PostLikesRead(c *gin.Context) {
-	code, message := h.PostService.PostLikesRead(c)
+func (h *PostHandler) LikesReadUserId(c *gin.Context) {
+	code, message := h.PostService.LikesReadUserId(c)
 	c.JSON(code, message)
 }
 
-func (h *PostHandler) PostCommentsAdd(c *gin.Context) {
-	code, message := h.PostService.PostCommentsAdd(c)
+func (h *PostHandler) CommentMarkCreate(c *gin.Context) {
+	code, message := h.PostService.CommentMarkCreate(c)
 	c.JSON(code, message)
 }
 
-func (h *PostHandler) PostCommentsRead(c *gin.Context) {
-	code, message := h.PostService.PostCommentsRead(c)
+func (h *PostHandler) CommentMarkReadUserId(c *gin.Context) {
+	code, message := h.PostService.CommentMarkReadUserId(c)
 	c.JSON(code, message)
 }

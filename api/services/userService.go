@@ -104,7 +104,7 @@ func (s *UserService) Login(c *gin.Context) (int, models.Message) {
 	}
 
 	auth := &models.User{}
-	s.UserRepository.CheckUserName(c, auth, user.Nickname)
+	s.UserRepository.UserReadNickname(c, auth, user.Nickname)
 
 	err = bcrypt.CompareHashAndPassword([]byte(auth.PasswordHash), []byte(user.PasswordHash))
 	if err != nil {
@@ -129,12 +129,12 @@ func (s *UserService) Login(c *gin.Context) (int, models.Message) {
 	}
 }
 
-func (s *UserService) GetInfoUser(c *gin.Context) (int, models.Message) {
+func (s *UserService) UserReadId(c *gin.Context) (int, models.Message) {
 	user := &models.User{}
 	user.UserId = GetUserId(c)
 
 	auth := &models.User{}
-	s.UserRepository.GetInfoUser(c, auth, user.UserId)
+	s.UserRepository.UserReadId(c, auth, user.UserId)
 
 	auth.PasswordHash = ""
 	auth.Email = strings.Split(auth.Email, "@")[0]
@@ -196,7 +196,7 @@ func (s *UserService) CheckStringLen(user models.User) (bool, string) {
 	return false, ""
 }
 
-func (s *UserService) CreateUser(c *gin.Context) (int, models.Message) {
+func (s *UserService) UserCreate(c *gin.Context) (int, models.Message) {
 	user := &models.User{}
 	err := c.ShouldBindJSON(user)
 	isLong, message := s.CheckStringLen(*user)
@@ -226,8 +226,8 @@ func (s *UserService) CreateUser(c *gin.Context) (int, models.Message) {
 
 	user1 := &models.User{}
 	user2 := &models.User{}
-	s.UserRepository.CheckUserEmail(c, user1, user.Email)
-	s.UserRepository.CheckUserName(c, user2, user.Nickname)
+	s.UserRepository.UserReadEmail(c, user1, user.Email)
+	s.UserRepository.UserReadNickname(c, user2, user.Nickname)
 
 	fmt.Println(user2.Nickname)
 	if user2.Nickname != "" {
@@ -244,7 +244,7 @@ func (s *UserService) CreateUser(c *gin.Context) (int, models.Message) {
 	user.PasswordHash = encryptedPassword
 
 	err = configs.DB.Transaction(func(tx *gorm.DB) error {
-		err := s.UserRepository.CreateUser(c, user)
+		err := s.UserRepository.UserCreate(c, user)
 		if err != nil {
 			return err
 		}

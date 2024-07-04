@@ -17,40 +17,40 @@ func RegisterRoutes(router *gin.Engine, userHandler *handlers.UserHandler, saleH
 
 		userR := authorized.Group("/user")
 		{
-			userR.POST("/register", userHandler.CheckUser)
-			userR.POST("/info", userHandler.GetInfoUser)
+			userR.POST("/register", userHandler.UserCreate)
+			userR.POST("/id", userHandler.UserReadId)
 			userR.POST("/ip/store", userHandler.StoreIP)
 		}
 		router.GET("/test", userHandler.Test)
 
 		saleR := authorized.Group("/sale")
 		{
-			saleR.POST("/book/submit", saleHandler.BookCreateSale)
-			saleR.POST("/book/by", saleHandler.BookGetBy)
-			saleR.POST("/book/all", saleHandler.BookGet)
+			saleR.POST("/book/create", saleHandler.BookCreate)
+			saleR.POST("/book/by", saleHandler.BookReadBy)
+			saleR.POST("/book/fetch", saleHandler.BookFetch)
 		}
 
 		postR := authorized.Group("/post")
 		{
-			postR.POST("/submit", postHandler.CreatePost)
-			postR.GET("/fetch", postHandler.GetPostAll)
-			postR.POST("/title", postHandler.GetPostTitle)
-			postR.POST("/content", postHandler.GetPostContent)
+			postR.POST("/create", postHandler.PostCreate)
+			postR.GET("/fetch", postHandler.PostFetch)
+			postR.POST("/read/title", postHandler.PostReadTitle)
+			postR.POST("/read/id", postHandler.ContentReadPostId)
 			commentR := postR.Group("/comment")
 			{
-				commentR.POST("/submit", postHandler.CreateComment)
-				commentR.POST("/fetch/postId", postHandler.CommentGetPostId)
-				commentR.POST("/fetch/userId", postHandler.CommentGetUserId)
+				commentR.POST("/create", postHandler.CommentCreate)
+				commentR.POST("/read/id", postHandler.CommentReadPostId)
+				commentR.POST("/read/userId", postHandler.CommentReadUserId)
 			}
 			markR := postR.Group("/mark")
 			{
-				markR.POST("/add", postHandler.PostCommentsAdd)
-				markR.POST("/read", postHandler.PostCommentsRead)
+				markR.POST("/create", postHandler.CommentMarkCreate)
+				markR.POST("/read", postHandler.CommentMarkReadUserId)
 			}
 			likesR := postR.Group("/likes")
 			{
-				likesR.POST("/change", postHandler.PostLikesChange)
-				likesR.POST("/read", postHandler.PostLikesRead)
+				likesR.POST("/change", postHandler.LikesChange)
+				likesR.POST("/read", postHandler.LikesReadUserId)
 			}
 		}
 	}

@@ -13,23 +13,17 @@ func NewSaleHandler(saleService *services.SaleService) *SaleHandler {
 	return &SaleHandler{SaleService: saleService}
 }
 
-func (h *SaleHandler) BookCreateSale(c *gin.Context) {
-	code, message := h.SaleService.BookSaleSubmit(c)
+func (h *SaleHandler) BookCreate(c *gin.Context) {
+	code, message := h.SaleService.BookCreate(c)
 	c.JSON(code, message)
 }
 
-func (h *SaleHandler) BookGetBy(c *gin.Context) {
-	code, message := h.SaleService.BookGetBy(c)
+func (h *SaleHandler) BookReadBy(c *gin.Context) {
+	code, message := h.SaleService.BookReadBy(c)
 	c.JSON(code, message)
 }
 
-func (h *SaleHandler) BookGet(c *gin.Context) {
-	code, message := h.SaleService.BookGet(c)
+func (h *SaleHandler) BookFetch(c *gin.Context) {
+	code, message := h.SaleService.BookFetch(c)
 	c.JSON(code, message)
 }
-
-//
-// func (h *UserHandler) CheckUser(c *gin.Context) {
-// 	code, message := h.UserService.CreateUser(c)
-// 	c.JSON(code, message)
-// }

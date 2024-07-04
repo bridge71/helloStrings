@@ -28,7 +28,7 @@ func NewPostService(postRepository *repositories.PostRepository) *PostService {
 	return &PostService{PostRepository: postRepository}
 }
 
-func (s *PostService) CreatePost(c *gin.Context) (int, models.Message) {
+func (s *PostService) PostCreate(c *gin.Context) (int, models.Message) {
 	body, err := io.ReadAll(c.Request.Body)
 	if err != nil {
 		fmt.Println("error json:", err)
@@ -99,14 +99,14 @@ func (s *PostService) CreatePost(c *gin.Context) (int, models.Message) {
 			// postContent.Content = re.ReplaceAllString(postContent.Content, newTag)
 		}
 		// postContent.Content = strings.ReplaceAll(html.EscapeString(postContent.Content), "\n", "<br>")
-		err := s.PostRepository.CreateInfo(c, post)
+		err := s.PostRepository.PostCreate(c, post)
 		if err != nil {
 			fmt.Println("CreateInfo error")
 			return err
 		}
 
 		postContent.PostId = post.PostId
-		err = s.PostRepository.InsertContent(c, postContent)
+		err = s.PostRepository.ContentCreate(c, postContent)
 		if err != nil {
 			fmt.Println("InsertContent error")
 			return err
@@ -124,7 +124,7 @@ func (s *PostService) CreatePost(c *gin.Context) (int, models.Message) {
 	}
 }
 
-func (s *PostService) CreateComment(c *gin.Context) (int, models.Message) {
+func (s *PostService) CommentCreate(c *gin.Context) (int, models.Message) {
 	comment := &models.Comment{}
 	err := c.ShouldBindJSON(comment)
 	if err != nil {
@@ -137,7 +137,7 @@ func (s *PostService) CreateComment(c *gin.Context) (int, models.Message) {
 	comment.Nickname = GetNickname(c)
 	comment.Content = strings.ReplaceAll(html.EscapeString(comment.Content), "\n", "<br>")
 	err = configs.DB.Transaction(func(tx *gorm.DB) error {
-		err := s.PostRepository.CreateComment(c, comment)
+		err := s.PostRepository.CommentCreate(c, comment)
 		if err != nil {
 			return err
 		}
@@ -153,58 +153,58 @@ func (s *PostService) CreateComment(c *gin.Context) (int, models.Message) {
 	}
 }
 
-func (s *PostService) GetAllPost(c *gin.Context) (int, models.Message) {
+func (s *PostService) PostFetch(c *gin.Context) (int, models.Message) {
 	var posts []models.Post
-	s.PostRepository.PostGet(c, &posts)
+	s.PostRepository.PostFetch(c, &posts)
 	return http.StatusOK, models.Message{
 		RetMessage: "get post successfully",
 		Post:       posts,
 	}
 }
 
-func (s *PostService) CommentGetPostId(c *gin.Context) (int, models.Message) {
+func (s *PostService) CommentReadPostId(c *gin.Context) (int, models.Message) {
 	post := &models.Post{}
 	err := c.ShouldBindJSON(post)
 	if err != nil {
 		return http.StatusForbidden, models.Message{RetMessage: "Bind error"}
 	}
 	var comments []models.Comment
-	s.PostRepository.CommentGetPostId(c, &comments, post.PostId)
+	s.PostRepository.CommentReadPostId(c, &comments, post.PostId)
 	return http.StatusOK, models.Message{
 		RetMessage: "get post successfully",
 		Comment:    comments,
 	}
 }
 
-func (s *PostService) CommentGetUserId(c *gin.Context) (int, models.Message) {
+func (s *PostService) CommentReadUserId(c *gin.Context) (int, models.Message) {
 	user := &models.User{}
 	err := c.ShouldBindJSON(user)
 	if err != nil {
 		return http.StatusForbidden, models.Message{RetMessage: "Bind error"}
 	}
 	var comments []models.Comment
-	s.PostRepository.CommentGetUserId(c, &comments, user.UserId)
+	s.PostRepository.CommentReadUserId(c, &comments, user.UserId)
 	return http.StatusOK, models.Message{
 		RetMessage: "get post successfully",
 		Comment:    comments,
 	}
 }
 
-func (s *PostService) GetPostContent(c *gin.Context) (int, models.Message) {
+func (s *PostService) ContentReadPostId(c *gin.Context) (int, models.Message) {
 	post := &models.Post{}
 	err := c.ShouldBindJSON(post)
 	if err != nil {
 		return http.StatusForbidden, models.Message{RetMessage: "Bind error"}
 	}
 	postContent := &models.PostContent{}
-	s.PostRepository.PostContentGet(c, postContent, post.PostId)
+	s.PostRepository.ContentReadPostId(c, postContent, post.PostId)
 	return http.StatusOK, models.Message{
 		RetMessage:  "get post successfully",
 		PostContent: *postContent,
 	}
 }
 
-func (s *PostService) GetPostTitle(c *gin.Context) (int, models.Message) {
+func (s *PostService) PostReadTitle(c *gin.Context) (int, models.Message) {
 	post := &models.Post{}
 	err := c.ShouldBindJSON(post)
 	if err != nil {
@@ -212,14 +212,14 @@ func (s *PostService) GetPostTitle(c *gin.Context) (int, models.Message) {
 		return http.StatusForbidden, models.Message{RetMessage: "Bind error"}
 	}
 	var posts []models.Post
-	s.PostRepository.PostGetTitle(c, &posts, post.Title)
+	s.PostRepository.PostReadTitle(c, &posts, post.Title)
 	return http.StatusOK, models.Message{
 		RetMessage: "get post successfully",
 		Post:       posts,
 	}
 }
 
-func (s *PostService) PostLikesChange(c *gin.Context) (int, models.Message) {
+func (s *PostService) LikesChange(c *gin.Context) (int, models.Message) {
 	post := &models.Post{}
 	err := c.ShouldBindJSON(post)
 	if err != nil {
@@ -234,21 +234,21 @@ func (s *PostService) PostLikesChange(c *gin.Context) (int, models.Message) {
 	been := false
 	err = configs.DB.Transaction(func(tx *gorm.DB) error {
 		likesGet := &models.Likes{}
-		s.PostRepository.PostLikeQuery(c, likesGet, userId, post.PostId)
+		s.PostRepository.LikeQuery(c, likesGet, userId, post.PostId)
 		var err error
 		if likesGet.PostId != 0 {
-			err = s.PostRepository.PostLikeDel(c, likes)
+			err = s.PostRepository.LikeDel(c, likes)
 			if err != nil {
 				return err
 			}
-			err = s.PostRepository.PostLikeDecrease(c, post)
+			err = s.PostRepository.LikeUpdateDown(c, post)
 			been = true
 		} else {
-			err = s.PostRepository.PostLikeAdd(c, likes)
+			err = s.PostRepository.LikeCreate(c, likes)
 			if err != nil {
 				return err
 			}
-			err = s.PostRepository.PostLikeIncrease(c, post)
+			err = s.PostRepository.LikeUpdateUp(c, post)
 		}
 		if err != nil {
 			return err
@@ -272,10 +272,10 @@ func (s *PostService) PostLikesChange(c *gin.Context) (int, models.Message) {
 	}
 }
 
-func (s *PostService) PostLikesRead(c *gin.Context) (int, models.Message) {
+func (s *PostService) LikesReadUserId(c *gin.Context) (int, models.Message) {
 	userId := GetUserId(c)
 	var likes []models.Likes
-	s.PostRepository.PostLikeRead(c, &likes, userId)
+	s.PostRepository.LikeReadUserId(c, &likes, userId)
 
 	return http.StatusOK, models.Message{
 		RetMessage: "changed likes",
@@ -283,7 +283,7 @@ func (s *PostService) PostLikesRead(c *gin.Context) (int, models.Message) {
 	}
 }
 
-func (s *PostService) PostCommentsAdd(c *gin.Context) (int, models.Message) {
+func (s *PostService) CommentMarkCreate(c *gin.Context) (int, models.Message) {
 	post := &models.Post{}
 	err := c.ShouldBindJSON(post)
 	if err != nil {
@@ -295,17 +295,17 @@ func (s *PostService) PostCommentsAdd(c *gin.Context) (int, models.Message) {
 		UserId: userId,
 		PostId: post.PostId,
 	}
-	s.PostRepository.PostCommentMarkAdd(c, commentMark)
+	s.PostRepository.CommentMarkCreate(c, commentMark)
 
 	return http.StatusOK, models.Message{
 		RetMessage: "comments",
 	}
 }
 
-func (s *PostService) PostCommentsRead(c *gin.Context) (int, models.Message) {
+func (s *PostService) CommentMarkReadUserId(c *gin.Context) (int, models.Message) {
 	userId := GetUserId(c)
 	var commentMark []models.CommentMark
-	s.PostRepository.PostCommentMarkRead(c, &commentMark, userId)
+	s.PostRepository.CommentMarkReadUserId(c, &commentMark, userId)
 	return http.StatusOK, models.Message{
 		RetMessage:  "read comments",
 		CommentMark: commentMark,

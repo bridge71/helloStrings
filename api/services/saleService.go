@@ -42,7 +42,7 @@ func checkStringLen(by models.BookBy) (bool, string) {
 	return false, ""
 }
 
-func (s *SaleService) BookGetBy(c *gin.Context) (int, models.Message) {
+func (s *SaleService) BookReadBy(c *gin.Context) (int, models.Message) {
 	by := &models.BookBy{}
 	err := c.ShouldBindJSON(by)
 	if err != nil {
@@ -56,18 +56,18 @@ func (s *SaleService) BookGetBy(c *gin.Context) (int, models.Message) {
 	fmt.Println(*by)
 	switch by.By {
 	case "title":
-		s.SaleRepository.BookGetTitle(c, &bookSale, by.Key)
+		s.SaleRepository.BookReadTitle(c, &bookSale, by.Key)
 	case "profession":
-		s.SaleRepository.BookGetProfession(c, &bookSale, by.Key)
+		s.SaleRepository.BookReadProfession(c, &bookSale, by.Key)
 	case "course":
-		s.SaleRepository.BookGetCourse(c, &bookSale, by.Key)
+		s.SaleRepository.BookReadCourse(c, &bookSale, by.Key)
 	case "author":
-		s.SaleRepository.BookGetAuthor(c, &bookSale, by.Key)
+		s.SaleRepository.BookReadAuthor(c, &bookSale, by.Key)
 	}
 	return http.StatusOK, models.Message{BookSale: bookSale}
 }
 
-func (s *SaleService) BookSaleSubmit(c *gin.Context) (int, models.Message) {
+func (s *SaleService) BookCreate(c *gin.Context) (int, models.Message) {
 	bookSale := &models.BookSale{}
 	err := c.ShouldBindJSON(bookSale)
 	if err != nil {
@@ -80,7 +80,7 @@ func (s *SaleService) BookSaleSubmit(c *gin.Context) (int, models.Message) {
 		return http.StatusForbidden, models.Message{RetMessage: message}
 	}
 	err = configs.DB.Transaction(func(tx *gorm.DB) error {
-		err := s.SaleRepository.BookSale(c, bookSale)
+		err := s.SaleRepository.BookCreate(c, bookSale)
 		if err != nil {
 			return err
 		}
@@ -96,9 +96,9 @@ func (s *SaleService) BookSaleSubmit(c *gin.Context) (int, models.Message) {
 	}
 }
 
-func (s *SaleService) BookGet(c *gin.Context) (int, models.Message) {
+func (s *SaleService) BookFetch(c *gin.Context) (int, models.Message) {
 	var bookSale []models.BookSale
-	s.SaleRepository.BookGet(c, &bookSale)
+	s.SaleRepository.BookFetch(c, &bookSale)
 	return http.StatusOK, models.Message{
 		RetMessage: "ok",
 		BookSale:   bookSale,

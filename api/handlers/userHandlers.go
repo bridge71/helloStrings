@@ -13,8 +13,8 @@ func NewUserHandler(userService *services.UserService) *UserHandler {
 	return &UserHandler{UserService: userService}
 }
 
-func (h *UserHandler) CheckUser(c *gin.Context) {
-	code, message := h.UserService.CreateUser(c)
+func (h *UserHandler) UserCreate(c *gin.Context) {
+	code, message := h.UserService.UserCreate(c)
 	c.JSON(code, message)
 }
 
@@ -23,8 +23,8 @@ func (h *UserHandler) StoreIP(c *gin.Context) {
 	c.JSON(code, message)
 }
 
-func (h *UserHandler) GetInfoUser(c *gin.Context) {
-	code, message := h.UserService.GetInfoUser(c)
+func (h *UserHandler) UserReadId(c *gin.Context) {
+	code, message := h.UserService.UserReadId(c)
 	c.JSON(code, message)
 }
 
