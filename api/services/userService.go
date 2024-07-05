@@ -124,7 +124,6 @@ func (s *UserService) Login(c *gin.Context) (int, models.Message) {
 	}
 
 	auth.PasswordHash = ""
-	fmt.Println(*auth)
 
 	cookie, err := c.Cookie("isLogin")
 	if err != nil || cookie != "ture" {
@@ -186,8 +185,6 @@ func (s *UserService) Test(c *gin.Context) (int, models.Message) {
 			RetMessage: "test failed",
 		}
 	}
-	fmt.Println(user)
-	fmt.Println(ip)
 	return http.StatusOK, models.Message{
 		RetMessage: "test successful",
 	}
@@ -241,7 +238,6 @@ func (s *UserService) UserCreate(c *gin.Context) (int, models.Message) {
 	s.UserRepository.UserReadEmail(c, user1, user.Email)
 	s.UserRepository.UserReadNickname(c, user2, user.Nickname)
 
-	fmt.Println(user2.Nickname)
 	if user2.Nickname != "" {
 		return http.StatusNotAcceptable, models.Message{RetMessage: "nickname has been occupied"}
 	}

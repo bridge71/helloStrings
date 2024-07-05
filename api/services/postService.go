@@ -295,6 +295,11 @@ func (s *PostService) LikesReadUserId(c *gin.Context) (int, models.Message) {
 	userId := GetUserId(c)
 	var likes []models.Likes
 	s.PostRepository.LikeReadUserId(c, &likes, userId)
+	if len(likes) == 0 {
+		return http.StatusOK, models.Message{
+			RetMessage: "ok",
+		}
+	}
 	postId := make([]uint, len(likes))
 	for index, like := range likes {
 		postId[index] = like.PostId
@@ -333,9 +338,15 @@ func (s *PostService) CommentMarkReadUserId(c *gin.Context) (int, models.Message
 	var commentMark []models.CommentMark
 	s.PostRepository.CommentMarkReadUserId(c, &commentMark, userId)
 
+	if len(commentMark) == 0 {
+		return http.StatusOK, models.Message{
+			RetMessage: "ok",
+		}
+	}
 	postId := make([]uint, len(commentMark))
 	for index, comment := range commentMark {
 		postId[index] = comment.PostId
+		fmt.Println(comment.PostId)
 	}
 	var post []models.Post
 

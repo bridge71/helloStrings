@@ -32,5 +32,5 @@ func main() {
 		c.File("../../contents/" + filename)
 	})
 
-	router.Run("127.0.0.1:7777")
+	router.Run(":7777")
 }

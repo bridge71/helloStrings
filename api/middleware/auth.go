@@ -12,6 +12,7 @@ type Auth struct{}
 func Authentication() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		cookie, err := c.Cookie("isLogin")
+		// c.Next()
 		if err != nil || cookie != "true" {
 			fmt.Println("sss")
 			c.Redirect(http.StatusFound, "/login")
