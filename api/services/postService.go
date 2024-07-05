@@ -219,6 +219,24 @@ func (s *PostService) PostReadTitle(c *gin.Context) (int, models.Message) {
 	}
 }
 
+func (s *PostService) PostReadNickname(c *gin.Context) (int, models.Message) {
+	post := &models.Post{}
+	err := c.ShouldBindJSON(post)
+	if err != nil {
+		fmt.Println(err)
+		return http.StatusForbidden, models.Message{RetMessage: "Bind error"}
+	}
+	var posts []models.Post
+	if post.Nickname == "" {
+		post.Nickname = GetNickname(c)
+	}
+	s.PostRepository.PostReadNickname(c, &posts, post.Nickname)
+	return http.StatusOK, models.Message{
+		RetMessage: "get post successfully",
+		Post:       posts,
+	}
+}
+
 func (s *PostService) LikesChange(c *gin.Context) (int, models.Message) {
 	post := &models.Post{}
 	err := c.ShouldBindJSON(post)
@@ -231,6 +249,7 @@ func (s *PostService) LikesChange(c *gin.Context) (int, models.Message) {
 		UserId: userId,
 		PostId: post.PostId,
 	}
+	fmt.Println("likes count", post.Likes)
 	been := false
 	err = configs.DB.Transaction(func(tx *gorm.DB) error {
 		likesGet := &models.Likes{}
@@ -276,10 +295,17 @@ func (s *PostService) LikesReadUserId(c *gin.Context) (int, models.Message) {
 	userId := GetUserId(c)
 	var likes []models.Likes
 	s.PostRepository.LikeReadUserId(c, &likes, userId)
+	postId := make([]uint, len(likes))
+	for index, like := range likes {
+		postId[index] = like.PostId
+	}
+	var post []models.Post
+
+	s.PostRepository.PostReadId(c, &post, postId)
 
 	return http.StatusOK, models.Message{
-		RetMessage: "changed likes",
-		Likes:      likes,
+		RetMessage: "ok",
+		Post:       post,
 	}
 }
 
@@ -306,8 +332,17 @@ func (s *PostService) CommentMarkReadUserId(c *gin.Context) (int, models.Message
 	userId := GetUserId(c)
 	var commentMark []models.CommentMark
 	s.PostRepository.CommentMarkReadUserId(c, &commentMark, userId)
+
+	postId := make([]uint, len(commentMark))
+	for index, comment := range commentMark {
+		postId[index] = comment.PostId
+	}
+	var post []models.Post
+
+	s.PostRepository.PostReadId(c, &post, postId)
+
 	return http.StatusOK, models.Message{
-		RetMessage:  "read comments",
-		CommentMark: commentMark,
+		RetMessage: "ok",
+		Post:       post,
 	}
 }

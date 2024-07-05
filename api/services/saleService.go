@@ -54,6 +54,7 @@ func (s *SaleService) BookReadBy(c *gin.Context) (int, models.Message) {
 	}
 	var bookSale []models.BookSale
 	fmt.Println(*by)
+	userId := GetUserId(c)
 	switch by.By {
 	case "title":
 		s.SaleRepository.BookReadTitle(c, &bookSale, by.Key)
@@ -63,8 +64,29 @@ func (s *SaleService) BookReadBy(c *gin.Context) (int, models.Message) {
 		s.SaleRepository.BookReadCourse(c, &bookSale, by.Key)
 	case "author":
 		s.SaleRepository.BookReadAuthor(c, &bookSale, by.Key)
+	default:
+		s.SaleRepository.BookReadId(c, &bookSale, userId)
 	}
 	return http.StatusOK, models.Message{BookSale: bookSale}
+}
+
+func (s *SaleService) BookUpdateStatus(c *gin.Context) (int, models.Message) {
+	bookSale := &models.BookSale{}
+	err := c.ShouldBindJSON(bookSale)
+	if err != nil {
+		return http.StatusForbidden, models.Message{RetMessage: "Bind error"}
+	}
+	bookSale.UserId = GetUserId(c)
+
+	err = s.SaleRepository.BookUpdateStatus(c, bookSale)
+	if err != nil {
+		return http.StatusInternalServerError, models.Message{
+			RetMessage: "something unusual happened when insert booksale into database",
+		}
+	}
+	return http.StatusOK, models.Message{
+		RetMessage: "ok",
+	}
 }
 
 func (s *SaleService) BookCreate(c *gin.Context) (int, models.Message) {

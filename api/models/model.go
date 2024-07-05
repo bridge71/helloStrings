@@ -13,7 +13,7 @@ type User struct {
 }
 
 type IP struct {
-	CreatedAt time.Time `gorm:"autoCreateTime"`
+	CreatedAt time.Time `gorm:"autoCreateTime" json:"createdAt"`
 	IP        string    `gorm:"column:IP" json:"ip"`
 	Province  string    `gorm:"column:province" json:"province"`
 	City      string    `gorm:"column:city" json:"city"`
@@ -28,13 +28,14 @@ type Message struct {
 	Post        []Post
 	Comment     []Comment
 	CommentMark []CommentMark
+	IP          []IP
 	Likes       []Likes
 	PostContent PostContent
 	User        User
 }
 
 type BookSale struct {
-	CreatedAt  time.Time `gorm:"autoCreateTime"`
+	CreatedAt  time.Time `json:"createdAt" gorm:"autoCreateTime"`
 	Title      string    `json:"title" gorm:"column:title;"`
 	Author     string    `json:"author" gorm:"column:author;"`
 	Profession string    `json:"profession" gorm:"column:profession;default:公共课"`
@@ -51,7 +52,7 @@ type BookBy struct {
 }
 
 type Post struct {
-	CreatedAt time.Time `gorm:"autoCreateTime"`
+	CreatedAt time.Time `gorm:"autoCreateTime" json:"createdAt"`
 	Title     string    `json:"title" gorm:"column:title;"`
 	Nickname  string    `gorm:"column:nickname;not null" json:"nickname"`
 	PostId    uint      `gorm:"column:postId;primaryKey" json:"postId"`
@@ -66,7 +67,7 @@ type PostContent struct {
 }
 
 type Comment struct {
-	CreatedAt time.Time `gorm:"autoCreateTime"`
+	CreatedAt time.Time `gorm:"autoCreateTime" json:"createdAt"`
 	Nickname  string    `gorm:"column:nickname;not null" json:"nickname"`
 	Content   string    `gorm:"column:content" json:"content"`
 	PostId    uint      `gorm:"column:postId"`

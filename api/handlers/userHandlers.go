@@ -18,8 +18,13 @@ func (h *UserHandler) UserCreate(c *gin.Context) {
 	c.JSON(code, message)
 }
 
-func (h *UserHandler) StoreIP(c *gin.Context) {
-	code, message := h.UserService.StoreIP(c)
+func (h *UserHandler) IPCreate(c *gin.Context) {
+	code, message := h.UserService.IPCreate(c)
+	c.JSON(code, message)
+}
+
+func (h *UserHandler) IPRead(c *gin.Context) {
+	code, message := h.UserService.IPRead(c)
 	c.JSON(code, message)
 }
 

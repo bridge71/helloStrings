@@ -28,6 +28,11 @@ func (h *PostHandler) PostReadTitle(c *gin.Context) {
 	c.JSON(code, message)
 }
 
+func (h *PostHandler) PostReadNickname(c *gin.Context) {
+	code, message := h.PostService.PostReadNickname(c)
+	c.JSON(code, message)
+}
+
 func (h *PostHandler) ContentReadPostId(c *gin.Context) {
 	code, message := h.PostService.ContentReadPostId(c)
 	c.JSON(code, message)

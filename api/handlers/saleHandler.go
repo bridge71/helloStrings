@@ -27,3 +27,8 @@ func (h *SaleHandler) BookFetch(c *gin.Context) {
 	code, message := h.SaleService.BookFetch(c)
 	c.JSON(code, message)
 }
+
+func (h *SaleHandler) BookUpdateStatus(c *gin.Context) {
+	code, message := h.SaleService.BookUpdateStatus(c)
+	c.JSON(code, message)
+}

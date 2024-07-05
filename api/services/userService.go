@@ -58,16 +58,17 @@ func GetNickname(c *gin.Context) string {
 	return nickname
 }
 
-func (s *UserService) StoreIP(c *gin.Context) (int, models.Message) {
+func (s *UserService) IPCreate(c *gin.Context) (int, models.Message) {
 	ip := &models.IP{}
 	err := c.ShouldBindJSON(ip)
+	ip.UserId = GetUserId(c)
 	fmt.Println("ip", ip)
 	if err != nil {
 		fmt.Println(err)
 		return http.StatusForbidden, models.Message{RetMessage: "error bind at ip"}
 	}
 	err = configs.DB.Transaction(func(tx *gorm.DB) error {
-		err := s.UserRepository.StoreIP(c, ip)
+		err := s.UserRepository.IPCreate(c, ip)
 		if err != nil {
 			return err
 		}
@@ -81,6 +82,17 @@ func (s *UserService) StoreIP(c *gin.Context) (int, models.Message) {
 
 	return http.StatusOK, models.Message{
 		RetMessage: "ip is stored",
+	}
+}
+
+func (s *UserService) IPRead(c *gin.Context) (int, models.Message) {
+	userId := GetUserId(c)
+	var ip []models.IP
+	s.UserRepository.IPRead(c, &ip, userId)
+
+	return http.StatusOK, models.Message{
+		RetMessage: "ip is stored",
+		IP:         ip,
 	}
 }
 

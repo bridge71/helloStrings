@@ -9,17 +9,18 @@ import (
 func RegisterRoutes(router *gin.Engine, userHandler *handlers.UserHandler, saleHandler *handlers.SaleHandler, postHandler *handlers.PostHandler) {
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
-	router.POST("/login", userHandler.Login)
+	router.POST("/_login", userHandler.Login)
 
+	router.POST("/user/register", userHandler.UserCreate)
 	authorized := router.Group("/")
 	authorized.Use(middleware.Authentication())
 	{
 
 		userR := authorized.Group("/user")
 		{
-			userR.POST("/register", userHandler.UserCreate)
 			userR.POST("/id", userHandler.UserReadId)
-			userR.POST("/ip/store", userHandler.StoreIP)
+			userR.POST("/ip/create", userHandler.IPCreate)
+			userR.POST("/ip/read", userHandler.IPRead)
 		}
 		router.GET("/test", userHandler.Test)
 
@@ -28,6 +29,7 @@ func RegisterRoutes(router *gin.Engine, userHandler *handlers.UserHandler, saleH
 			saleR.POST("/book/create", saleHandler.BookCreate)
 			saleR.POST("/book/by", saleHandler.BookReadBy)
 			saleR.POST("/book/fetch", saleHandler.BookFetch)
+			saleR.POST("/book/update", saleHandler.BookUpdateStatus)
 		}
 
 		postR := authorized.Group("/post")
@@ -35,6 +37,7 @@ func RegisterRoutes(router *gin.Engine, userHandler *handlers.UserHandler, saleH
 			postR.POST("/create", postHandler.PostCreate)
 			postR.GET("/fetch", postHandler.PostFetch)
 			postR.POST("/read/title", postHandler.PostReadTitle)
+			postR.POST("/read/nickname", postHandler.PostReadNickname)
 			postR.POST("/read/id", postHandler.ContentReadPostId)
 			commentR := postR.Group("/comment")
 			{

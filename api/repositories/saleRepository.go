@@ -28,6 +28,14 @@ func (r *SaleRepository) BookReadTitle(c *gin.Context, bookSale *[]models.BookSa
 	configs.DB.WithContext(c).Where("title LIKE ?", "%"+title+"%").Order("created_at desc").Find(bookSale)
 }
 
+func (r *SaleRepository) BookUpdateStatus(c *gin.Context, bookSale *models.BookSale) error {
+	return configs.DB.WithContext(c).Model(bookSale).Where("created_at = ? and userID = ?", bookSale.CreatedAt, bookSale.UserId).Update("is_sold", !bookSale.IsSold).Error
+}
+
+func (r *SaleRepository) BookReadId(c *gin.Context, bookSale *[]models.BookSale, userId uint) {
+	configs.DB.WithContext(c).Where("userId = ?", userId).Order("created_at desc").Find(bookSale)
+}
+
 func (r *SaleRepository) BookReadCourse(c *gin.Context, bookSale *[]models.BookSale, course string) {
 	configs.DB.WithContext(c).Where("course LIKE ?", "%"+course+"%").Order("created_at desc").Find(bookSale)
 }

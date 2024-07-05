@@ -16,8 +16,12 @@ func (r *UserRepository) UserCreate(c *gin.Context, user *models.User) error {
 	return configs.DB.WithContext(c).Create(user).Error
 }
 
-func (r *UserRepository) StoreIP(c *gin.Context, IP *models.IP) error {
+func (r *UserRepository) IPCreate(c *gin.Context, IP *models.IP) error {
 	return configs.DB.WithContext(c).Create(IP).Error
+}
+
+func (r *UserRepository) IPRead(c *gin.Context, IP *[]models.IP, userId uint) {
+	configs.DB.WithContext(c).Where("userId = ?", userId).Find(IP)
 }
 
 func (r *UserRepository) UserReadId(c *gin.Context, user *models.User, userId uint) {

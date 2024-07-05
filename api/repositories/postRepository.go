@@ -28,8 +28,16 @@ func (r *PostRepository) PostReadTitle(c *gin.Context, post *[]models.Post, titl
 	configs.DB.WithContext(c).Where("title LIKE ?", "%"+title+"%").Order("created_at desc").Find(post)
 }
 
+func (r *PostRepository) PostReadNickname(c *gin.Context, post *[]models.Post, nickname string) {
+	configs.DB.WithContext(c).Where("nickname = ?", nickname).Order("created_at desc").Find(post)
+}
+
 func (r *PostRepository) PostFetch(c *gin.Context, post *[]models.Post) {
 	configs.DB.WithContext(c).Order("created_at desc").Find(post)
+}
+
+func (r *PostRepository) PostReadId(c *gin.Context, post *[]models.Post, ids []uint) {
+	configs.DB.WithContext(c).Where(ids).Order("created_at desc").Find(post)
 }
 
 func (r *PostRepository) ContentReadPostId(c *gin.Context, postContent *models.PostContent, postId uint) {
