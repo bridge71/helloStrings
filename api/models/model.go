@@ -3,8 +3,6 @@ package models
 import "time"
 
 type User struct {
-	// Nickname string `gorm:"column:nickname;unique;not null" `
-	// Email    string `gorm:"column:email;unique;not null" `
 	Nickname     string `gorm:"column:nickname;unique;not null" json:"nickname"`
 	Email        string `gorm:"column:email;unique;not null" json:"email"`
 	PasswordHash string `gorm:"column:passwordHash" json:"password"`
